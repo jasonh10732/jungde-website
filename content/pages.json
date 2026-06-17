@@ -1,0 +1,43 @@
+{
+  "items": [
+    {
+      "key": "heritage",
+      "eyebrow": "種德的故事",
+      "title": "百年傳承的足跡",
+      "lead": "種德藥房成立於1950年，為黃自強中醫師白手起家，24歲即開始行醫，秉持著「為大眾種下福田，以德待人」的期許醫治病人。如今由第三代繼承種德的傳統，為客人把關好每一份漢方。",
+      "hero": "assets/photo-store.png",
+      "showTimeline": true,
+      "showForm": false,
+      "sections": [
+        { "eyebrow": "創立", "title": "白手起家的中醫師", "body": "黃自強中醫師24歲即開始行醫，以「種德」為念，醫治鄉里病人。藥房門口的荷花與長年盛開的黃花，象徵著我們的核心理念。", "image": "assets/photo-family.png", "side": "left" },
+        { "eyebrow": "傳承", "title": "三代同心，初心不變", "body": "由媳婦於1976年接手，隔年正式改名為「種德中藥房」。如今第三代繼承傳統，從不做過多的推銷，只推薦最適合的。", "image": "assets/photo-brew.png", "side": "right" }
+      ]
+    },
+    {
+      "key": "press",
+      "eyebrow": "媒體採訪",
+      "title": "古樸典雅，受邀拍攝",
+      "lead": "種德藥房位於樹林火車站對面，古樸的店內充滿著草本的氣息。因藥房的典雅，我們曾受邀電視台採訪，也參與導演吳念真的廣告拍攝。",
+      "hero": "assets/photo-store.png",
+      "showTimeline": false,
+      "showForm": false,
+      "sections": [
+        { "eyebrow": "電視採訪", "title": "走進百年中藥房", "body": "節目走訪樹林老店，記錄了種德從篩藥、曬藥到調配漢方茶飲的日常，以及三代相承的故事。", "image": "assets/photo-dining.png", "side": "right" },
+        { "eyebrow": "廣告拍攝", "title": "鏡頭下的古樸場景", "body": "店內典雅的木櫃、藥材與荷花，成為導演吳念真廣告中的場景，呈現出最真實的台灣老中藥房氣息。", "image": "assets/photo-portrait.png", "side": "left" }
+      ]
+    },
+    {
+      "key": "service",
+      "eyebrow": "客製化服務",
+      "title": "代煎・代磨粉・漢方諮詢",
+      "lead": "除了現成的漢方商品，我們也提供客製化服務。無論是想依體質調配的茶飲、需要代煎代磨的藥材，或不知道如何選擇，都歡迎透過 LINE 或來電與我們聊聊，我們只推薦最適合您的。",
+      "hero": "assets/photo-herbs.png",
+      "showTimeline": false,
+      "showForm": true,
+      "sections": [
+        { "eyebrow": "代煎服務", "title": "替您熬好一帖好藥", "body": "將藥材代為煎煮、分裝，省去您顧火的時間，回家加熱即可飲用。", "image": "assets/photo-brew.png", "side": "left" },
+        { "eyebrow": "代磨粉・諮詢", "title": "依體質量身建議", "body": "可代磨粉、分裝，亦可預約漢方諮詢。老闆娘會耐心了解您的需求，給出最合適的建議。", "image": "assets/photo-chamomile.jpg", "side": "right" }
+      ]
+    }
+  ]
+}

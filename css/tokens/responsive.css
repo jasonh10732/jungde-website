@@ -1,0 +1,62 @@
+/* ============================================================
+   種德中藥行 · Responsive layer
+   Two things happen here, both tunable in ONE place:
+   1. Token overrides — type scale & spacing shrink on small screens.
+   2. Layout utility classes — the grids used across the website kit
+      collapse from multi-column → stacked. Edit the breakpoints below
+      (1024px = tablet, 700px = phone) to taste.
+   ============================================================ */
+
+/* ---- 1. Token overrides ---------------------------------- */
+@media (max-width: 1024px) and (min-width: 701px) {
+  :root {
+    --fs-h1: 34px;
+    --fs-display: 54px;
+    --space-9: 56px;
+    --space-10: 64px;
+  }
+}
+
+@media (max-width: 700px) {
+  :root {
+    --fs-h1: 29px;
+    --fs-h2: 24px;
+    --fs-h3: 21px;
+    --fs-h4: 19px;
+    --fs-lg: 17px;
+    --fs-display: 44px;
+    --space-10: 52px;
+    --space-9: 44px;
+    --space-8: 36px;
+    --space-7: 32px;
+    --space-6: 32px;
+    --space-5: 22px;
+  }
+}
+
+/* ---- 2. Layout utility classes --------------------------- */
+.jd-split        { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-7); align-items: center; }
+.jd-split-flush  { display: grid; grid-template-columns: 1fr 1fr; }
+.jd-grid-2       { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-5); }
+.jd-grid-3       { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-4); }
+.jd-grid-4       { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); }
+.jd-form-2       { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+.jd-footer-grid  { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: var(--space-7); }
+
+@media (max-width: 1024px) {
+  .jd-grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .jd-grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .jd-split  { gap: var(--space-5); }
+  .jd-footer-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 700px) {
+  .jd-split,
+  .jd-split-flush,
+  .jd-grid-2,
+  .jd-grid-3,
+  .jd-grid-4,
+  .jd-form-2,
+  .jd-footer-grid { grid-template-columns: 1fr; }
+  .jd-split { gap: var(--space-4); }
+}

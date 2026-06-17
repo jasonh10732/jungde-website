@@ -1,0 +1,11 @@
+/* ============================================================
+   種德中藥行 JUNG-DE · Webfonts
+   Substitution note: the Figma file specifies "Noto Sans" (CJK →
+   Noto Sans TC) and "Inter" — both Google Fonts. Original .ttf
+   binaries were not included in the file, so we load the matching
+   Google webfonts here. "Noto Serif TC" is added as the display /
+   古樸 voice. If you have licensed in-house faces, drop the .woff2
+   into assets/fonts/ and replace these @import / @font-face rules.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');

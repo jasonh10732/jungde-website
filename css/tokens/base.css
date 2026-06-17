@@ -1,0 +1,50 @@
+/* ============================================================
+   種德中藥行 JUNG-DE · Base / reset
+   Sensible element defaults so screens & cards inherit the brand
+   voice without per-element boilerplate.
+   ============================================================ */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-md);
+  line-height: var(--lh-md);
+  font-weight: var(--weight-regular);
+  color: var(--text-body);
+  background: var(--bg-page);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-weight: var(--weight-bold);
+  color: var(--text-heading);
+  line-height: var(--lh-h2);
+  text-wrap: balance;
+}
+h1 { font-size: var(--fs-h1); line-height: var(--lh-h1); }
+h2 { font-size: var(--fs-h2); }
+h3 { font-size: var(--fs-h3); }
+h4 { font-size: var(--fs-h4); font-weight: var(--weight-medium); line-height: var(--lh-h4); }
+h5 { font-size: var(--fs-h5); font-weight: var(--weight-medium); line-height: var(--lh-h5); }
+
+p { margin: 0; text-wrap: pretty; }
+
+a { color: var(--color-link); text-decoration: none; }
+
+img { display: block; max-width: 100%; }
+
+::selection { background: var(--champagne-100); color: var(--eggplant); }
+
+:focus-visible {
+  outline: 2px solid var(--redwood);
+  outline-offset: 2px;
+}

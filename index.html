@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>種德中藥行 · JUNG-DE｜近百年漢方老店</title>
+  <meta name="description" content="種德中藥行（JUNG-DE）成立於1950年，位於新北市樹林。傳承老中醫的智慧，佐以溫和漢方草本，提供漢方茶品、漢方佳餚、藥草香袋與客製化服務。" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="種德中藥行 · JUNG-DE" />
+  <meta property="og:description" content="近百年老店，傳承古法。每一口都喝得到的溫柔呵護。" />
+  <meta property="og:image" content="assets/logo-green.png" />
+
+  <link rel="icon" type="image/png" href="assets/logo-emblem.png" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div id="app"></div>
+
+  <!-- 網站程式：載入 content/ 內容並渲染頁面 -->
+  <script src="js/app.js"></script>
+
+  <!-- 後臺登入用（Netlify Identity）。處理邀請連結，導向 /admin/ -->
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+  <script>
+    if (window.netlifyIdentity) {
+      window.netlifyIdentity.on("init", function (user) {
+        if (!user) {
+          window.netlifyIdentity.on("login", function () { document.location.href = "/admin/"; });
+        }
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+# ============================================================
+# 種德中藥行 — 內容後臺設定 (Decap CMS)
+# 路徑皆相對於「網站根目錄」(也就是 site 資料夾的內容)。
+# 上線方式見專案的「後臺使用說明.md」。
+# ============================================================
+
+backend:
+  name: git-gateway       # 透過 Netlify Identity 登入；見說明文件
+  branch: main            # 若你的 GitHub 主分支叫 master，改成 master
+
+# 後臺上傳的照片會存進這裡
+media_folder: "assets"
+public_folder: "assets"
+
+locale: "zh_Hant"
+
+# 介面語言提示
+site_url: /
+display_url: /
+
+collections:
+  # ---- 網站設定（LINE 連結、門市資料） ----
+  - name: "settings"
+    label: "網站設定"
+    files:
+      - name: "general"
+        label: "基本資料"
+        file: "content/settings.json"
+        fields:
+          - { name: line, label: "LINE 連結（換成你的官方帳號網址）", widget: string }
+          - name: shop
+            label: "門市資料"
+            widget: object
+            fields:
+              - { name: name, label: "店名", widget: string }
+              - { name: address, label: "地址", widget: string }
+              - { name: hoursWeekday, label: "平日營業時間", widget: string }
+              - { name: hoursWeekend, label: "週末營業時間", widget: string }
+              - { name: phone, label: "電話", widget: string }
+              - { name: email, label: "Email", widget: string }
+
+  # ---- 商品（新增 / 下架就在這裡操作） ----
+  - name: "products"
+    label: "商品"
+    files:
+      - name: "list"
+        label: "商品列表"
+        file: "content/products.json"
+        fields:
+          - name: items
+            label: "商品"
+            label_singular: "商品"
+            widget: list
+            summary: "{{fields.name}}（{{fields.cat}}）"
+            fields:
+              - { name: id, label: "代號（英文、不可重複）", widget: string, hint: "例如 rose、soup1，用來辨識商品" }
+              - { name: name, label: "名稱", widget: string }
+              - name: cat
+                label: "分類"
+                widget: select
+                options:
+                  - { label: "漢方茶品", value: "tea" }
+                  - { label: "漢方佳餚", value: "food" }
+                  - { label: "藥草香袋", value: "sachet" }
+              - { name: price, label: "價格", widget: number, value_type: int, min: 0 }
+              - { name: oldPrice, label: "原價（會劃掉；沒有就留空）", widget: number, required: false, value_type: int, min: 0 }
+              - { name: tags, label: "標籤（如 溫補、舒緩）", widget: list, required: false }
+              - { name: image, label: "照片", widget: image }
+
+  # ---- 商品分類介紹頁 ----
+  - name: "categories"
+    label: "商品分類介紹"
+    files:
+      - name: "list"
+        label: "分類頁（茶品 / 佳餚 / 香袋）"
+        file: "content/categories.json"
+        fields:
+          - name: items
+            label: "分類"
+            widget: list
+            summary: "{{fields.title}}"
+            fields:
+              - { name: key, label: "代號（tea / food / sachet，請勿更改）", widget: string }
+              - { name: eyebrow, label: "小標", widget: string }
+              - { name: title, label: "標題", widget: string }
+              - { name: lead, label: "介紹文", widget: text }
+              - { name: hero, label: "主圖", widget: image }
+              - { name: storyTitle, label: "故事標題", widget: string }
+              - { name: storyBody, label: "故事內文", widget: text }
+              - { name: storyImage, label: "故事圖片", widget: image }
+
+  # ---- 內容頁（百年傳承 / 媒體採訪 / 客製化服務） ----
+  - name: "pages"
+    label: "內容頁"
+    files:
+      - name: "list"
+        label: "內容頁（傳承 / 採訪 / 服務）"
+        file: "content/pages.json"
+        fields:
+          - name: items
+            label: "頁面"
+            widget: list
+            summary: "{{fields.title}}"
+            fields:
+              - { name: key, label: "代號（heritage / press / service，請勿更改）", widget: string }
+              - { name: eyebrow, label: "小標", widget: string }
+              - { name: title, label: "標題", widget: string }
+              - { name: lead, label: "介紹文", widget: text }
+              - { name: hero, label: "主圖", widget: image }
+              - { name: showTimeline, label: "顯示百年年表", widget: boolean, default: false }
+              - { name: showForm, label: "顯示諮詢表單", widget: boolean, default: false }
+              - name: sections
+                label: "段落（圖＋文交錯）"
+                widget: list
+                summary: "{{fields.title}}"
+                fields:
+                  - { name: eyebrow, label: "小標", widget: string }
+                  - { name: title, label: "標題", widget: string }
+                  - { name: body, label: "內文", widget: text }
+                  - { name: image, label: "圖片", widget: image }
+                  - name: side
+                    label: "圖片位置"
+                    widget: select
+                    options:
+                      - { label: "圖在左", value: "left" }
+                      - { label: "圖在右", value: "right" }
+
+  # ---- 百年年表 ----
+  - name: "timeline"
+    label: "百年年表"
+    files:
+      - name: "list"
+        label: "年表項目"
+        file: "content/timeline.json"
+        fields:
+          - name: items
+            label: "年表項目"
+            widget: list
+            summary: "{{fields.year}}"
+            fields:
+              - { name: year, label: "年份", widget: string }
+              - { name: text, label: "說明", widget: text }
+
+  # ---- 文章 ----
+  - name: "articles"
+    label: "文章"
+    files:
+      - name: "list"
+        label: "文章列表"
+        file: "content/articles.json"
+        fields:
+          - name: items
+            label: "文章"
+            label_singular: "文章"
+            widget: list
+            summary: "{{fields.title}}"
+            fields:
+              - { name: id, label: "代號（英文、不可重複）", widget: string }
+              - name: cat
+                label: "分類"
+                widget: select
+                options: ["常見症狀", "養生配方", "中藥料理", "其他"]
+              - { name: title, label: "標題", widget: string }
+              - { name: image, label: "圖片", widget: image }
+              - { name: excerpt, label: "摘要", widget: text }

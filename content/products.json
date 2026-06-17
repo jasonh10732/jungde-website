@@ -1,0 +1,16 @@
+{
+  "items": [
+    { "id": "rose",   "name": "玫瑰輕盈茶",   "cat": "tea",    "price": 380, "oldPrice": 300, "tags": ["去濕", "輕盈"], "image": "assets/photo-brew.png" },
+    { "id": "chamo",  "name": "洋甘菊安神茶", "cat": "tea",    "price": 420, "tags": ["溫補", "舒緩"], "image": "assets/photo-chamomile.jpg" },
+    { "id": "qi",     "name": "補氣養顏茶",   "cat": "tea",    "price": 460, "oldPrice": 420, "tags": ["溫補"], "image": "assets/photo-tea.png" },
+    { "id": "warm",   "name": "暖身薑棗茶",   "cat": "tea",    "price": 360, "tags": ["去濕", "溫補"], "image": "assets/photo-brew.png" },
+    { "id": "soup",   "name": "黃耆雞湯漢方包", "cat": "food",  "price": 520, "tags": ["溫補", "進補"], "image": "assets/photo-portrait.png" },
+    { "id": "four",   "name": "四物排骨湯包",  "cat": "food",   "price": 480, "oldPrice": 420, "tags": ["溫補"], "image": "assets/photo-dining.png" },
+    { "id": "hotpot", "name": "養生藥膳鍋包",  "cat": "food",   "price": 560, "tags": ["進補"], "image": "assets/photo-tea.png" },
+    { "id": "congee", "name": "山藥四神粥材",  "cat": "food",   "price": 320, "tags": ["溫補", "顧胃"], "image": "assets/photo-brew.png" },
+    { "id": "sleep",  "name": "安神助眠香袋",  "cat": "sachet", "price": 220, "tags": ["舒緩"], "image": "assets/photo-herbs.png" },
+    { "id": "bug",    "name": "防蚊驅蟲香袋",  "cat": "sachet", "price": 180, "tags": ["清新"], "image": "assets/photo-chamomile.jpg" },
+    { "id": "fresh",  "name": "淨化空間草本包", "cat": "sachet", "price": 240, "oldPrice": 200, "tags": ["清新", "舒緩"], "image": "assets/photo-herbs.png" },
+    { "id": "car",    "name": "隨身車用香囊",  "cat": "sachet", "price": 160, "tags": ["舒緩"], "image": "assets/photo-portrait.png" }
+  ]
+}

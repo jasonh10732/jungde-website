@@ -1,0 +1,75 @@
+/* ============================================================
+   種德中藥行 JUNG-DE · Colour tokens
+   Warm, antique apothecary palette. Values lifted verbatim from
+   the Figma "Colour Palatte" + "Text Style" variable collections.
+   ============================================================ */
+
+:root {
+  /* ---- Brand · Accent ------------------------------------- */
+  --redwood: #9f4a54;        /* Primary — seals, CTAs, links     */
+  --redwood-deep: #863e47;   /* hover / pressed (derived)        */
+  --eggplant: #563440;       /* Headings (H1–H3), deep accent    */
+  --eggplant-deep: #432832;  /* hover on eggplant (derived)      */
+
+  /* ---- Brand · Seal marks (from the lotus logo) ----------- */
+  --seal-olive: #6f7832;     /* olive logo blob                  */
+  --seal-gold: #c7922b;      /* gold logo blob / since-1950 foil */
+
+  /* ---- Neutral · Champagne (warm paper tones) ------------- */
+  --champagne-20: #fbf7f4;   /* lightest — secondary CTA fill    */
+  --champagne-30: #f9f3ef;
+  --champagne-40: #f7efea;   /* page background                  */
+  --champagne-60: #f1e4da;   /* alt section background           */
+  --champagne-100: #ebd8ca;  /* hairline borders, footer field   */
+  --champagne-110: #d4c2b6;  /* big watermark numerals           */
+  --champagne-120: #bcada2;  /* decorative quote marks           */
+
+  /* ---- Neutral · Silver (cool greys) ---------------------- */
+  --silver-50: #dddcd8;
+  --silver-60: #c7c6c2;
+  --silver-70: #b1b0ad;      /* struck-through / disabled price  */
+  --silver-100: #6f6e6c;     /* muted / caption text             */
+  --silver-110: #585856;
+  --silver-130: #2c2c2b;     /* body text                        */
+
+  --white: #ffffff;
+  --black: #000000;
+
+  /* ---- Header scrim --------------------------------------- */
+  --scrim-eggplant: rgba(86, 52, 64, 0.70);
+
+  /* ============================================================
+     Semantic aliases — reach for these in components/screens.
+     ============================================================ */
+
+  /* Surfaces & backgrounds */
+  --bg-page: var(--champagne-40);
+  --bg-alt: var(--champagne-60);
+  --surface-card: var(--white);
+  --surface-warm: var(--champagne-20);
+  --surface-sink: var(--champagne-30);
+
+  /* Text */
+  --text-heading: var(--eggplant);
+  --text-body: var(--silver-130);
+  --text-muted: var(--silver-100);
+  --text-on-dark: var(--white);
+  --text-price-old: var(--silver-70);
+
+  /* Interactive */
+  --color-primary: var(--redwood);
+  --color-primary-hover: var(--redwood-deep);
+  --color-primary-text: var(--white);
+  --color-secondary: var(--champagne-20);
+  --color-secondary-text: var(--redwood);
+  --color-link: var(--redwood);
+
+  /* Lines & dividers */
+  --border-soft: var(--champagne-100);
+  --border-strong: var(--silver-50);
+  --divider: var(--champagne-100);
+
+  /* LINE brand (only external action we expose) */
+  --line-green: #06c755;
+  --line-green-hover: #05b34c;
+}
