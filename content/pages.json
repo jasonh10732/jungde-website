@@ -56,7 +56,7 @@
       "title": "代煎・代磨粉・漢方諮詢",
       "lead": "除了現成的漢方商品，我們也提供客製化服務。無論是想依體質調配的茶飲、需要代煎代磨的藥材，或不知道如何選擇，都歡迎透過 LINE 或來電與我們聊聊，我們只推薦最適合您的。",
       "hero": "assets/photo-herbs.png",
-      "showTimeline": true,
+      "showTimeline": false,
       "showForm": false,
       "sections": [
         {
