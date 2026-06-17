@@ -9,8 +9,20 @@
       "showTimeline": true,
       "showForm": false,
       "sections": [
-        { "eyebrow": "創立", "title": "白手起家的中醫師", "body": "黃自強中醫師24歲即開始行醫，以「種德」為念，醫治鄉里病人。藥房門口的荷花與長年盛開的黃花，象徵著我們的核心理念。", "image": "assets/photo-family.png", "side": "left" },
-        { "eyebrow": "傳承", "title": "三代同心，初心不變", "body": "由媳婦於1976年接手，隔年正式改名為「種德中藥房」。如今第三代繼承傳統，從不做過多的推銷，只推薦最適合的。", "image": "assets/photo-brew.png", "side": "right" }
+        {
+          "eyebrow": "創立",
+          "title": "白手起家的中醫師",
+          "body": "黃自強中醫師24歲即開始行醫，以「種德」為念，醫治鄉里病人。藥房門口的荷花與長年盛開的黃花，象徵著我們的核心理念。",
+          "image": "assets/photo-family.png",
+          "side": "left"
+        },
+        {
+          "eyebrow": "傳承",
+          "title": "三代同心，初心不變",
+          "body": "由媳婦於1976年接手，隔年正式改名為「種德中藥房」。如今第三代繼承傳統，從不做過多的推銷，只推薦最適合的。",
+          "image": "assets/photo-brew.png",
+          "side": "right"
+        }
       ]
     },
     {
@@ -22,8 +34,20 @@
       "showTimeline": false,
       "showForm": false,
       "sections": [
-        { "eyebrow": "電視採訪", "title": "走進百年中藥房", "body": "節目走訪樹林老店，記錄了種德從篩藥、曬藥到調配漢方茶飲的日常，以及三代相承的故事。", "image": "assets/photo-dining.png", "side": "right" },
-        { "eyebrow": "廣告拍攝", "title": "鏡頭下的古樸場景", "body": "店內典雅的木櫃、藥材與荷花，成為導演吳念真廣告中的場景，呈現出最真實的台灣老中藥房氣息。", "image": "assets/photo-portrait.png", "side": "left" }
+        {
+          "eyebrow": "電視採訪",
+          "title": "走進百年中藥房",
+          "body": "節目走訪樹林老店，記錄了種德從篩藥、曬藥到調配漢方茶飲的日常，以及三代相承的故事。",
+          "image": "assets/photo-dining.png",
+          "side": "right"
+        },
+        {
+          "eyebrow": "廣告拍攝",
+          "title": "鏡頭下的古樸場景",
+          "body": "店內典雅的木櫃、藥材與荷花，成為導演吳念真廣告中的場景，呈現出最真實的台灣老中藥房氣息。",
+          "image": "assets/photo-portrait.png",
+          "side": "left"
+        }
       ]
     },
     {
@@ -32,11 +56,23 @@
       "title": "代煎・代磨粉・漢方諮詢",
       "lead": "除了現成的漢方商品，我們也提供客製化服務。無論是想依體質調配的茶飲、需要代煎代磨的藥材，或不知道如何選擇，都歡迎透過 LINE 或來電與我們聊聊，我們只推薦最適合您的。",
       "hero": "assets/photo-herbs.png",
-      "showTimeline": false,
-      "showForm": true,
+      "showTimeline": true,
+      "showForm": false,
       "sections": [
-        { "eyebrow": "代煎服務", "title": "替您熬好一帖好藥", "body": "將藥材代為煎煮、分裝，省去您顧火的時間，回家加熱即可飲用。", "image": "assets/photo-brew.png", "side": "left" },
-        { "eyebrow": "代磨粉・諮詢", "title": "依體質量身建議", "body": "可代磨粉、分裝，亦可預約漢方諮詢。老闆娘會耐心了解您的需求，給出最合適的建議。", "image": "assets/photo-chamomile.jpg", "side": "right" }
+        {
+          "eyebrow": "代煎服務",
+          "title": "替您熬好一帖好藥",
+          "body": "將藥材代為煎煮、分裝，省去您顧火的時間，回家加熱即可飲用。",
+          "image": "assets/photo-brew.png",
+          "side": "left"
+        },
+        {
+          "eyebrow": "代磨粉・諮詢",
+          "title": "依體質量身建議",
+          "body": "可代磨粉、分裝，亦可預約漢方諮詢。老闆娘會耐心了解您的需求，給出最合適的建議。",
+          "image": "assets/photo-chamomile.jpg",
+          "side": "right"
+        }
       ]
     }
   ]
