@@ -146,7 +146,7 @@
   }
 
   /* ---- Purchase routing (固定→蝦皮 / 客製→LINE) ------------ */
-  function shopeeActive(p) { return !!(p && p.channel === "shopee" && p.shopeeUrl); }
+  function shopeeActive(p) { return !!(p && p.shopeeUrl && String(p.shopeeUrl).trim()); }
 
   function ChannelBadge(p) {
     var shop = shopeeActive(p);
