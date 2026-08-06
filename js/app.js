@@ -133,6 +133,37 @@
         o.sub ? h("span", { class: "fi-sub" }, o.sub) : null));
   }
 
+  /* ---- Purchase routing (固定→蝦皮 / 客製→LINE) ------------ */
+  function shopeeActive(p) { return !!(p && p.channel === "shopee" && p.shopeeUrl); }
+
+  function ChannelBadge(p) {
+    var shop = shopeeActive(p);
+    return h("span", { class: "pc-channel " + (shop ? "is-shopee" : "is-line") },
+      icon(shop ? "ri-shopping-bag-3-line" : "ri-line-fill"),
+      shop ? "蝦皮購買" : "LINE 訂購 / 客製");
+  }
+
+  function ShopeeButton(opts) {
+    opts = opts || {};
+    return h("a", { class: "btn btn--shopee" + (opts.size === "sm" ? " btn--sm" : ""), href: opts.href, target: "_blank", rel: "noopener" },
+      icon("ri-shopping-bag-3-line"), opts.label || "到蝦皮購買");
+  }
+
+  function BuyActions(p) {
+    if (shopeeActive(p)) {
+      return h("div", { class: "row wrap gap-2", style: "margin-top:var(--space-1)" },
+        ShopeeButton({ href: p.shopeeUrl, label: "到蝦皮購買" }),
+        LineButton({ variant: "outline", label: "用 LINE 詢問" }));
+    }
+    return h("div", { class: "row wrap gap-2", style: "margin-top:var(--space-1)" },
+      LineButton({ label: "我要訂購 / 我要客製" }));
+  }
+
+  function buyNote(p) {
+    if (shopeeActive(p)) return "※ 此為固定商品，由蝦皮處理結帳與寄送；網路價含包裝與物流成本，可能與門市價不同。";
+    return "※ 客製商品由專人於 LINE 依您的需求確認內容並提供報價，本站不提供線上結帳，亦可來電 " + D.shop.phone + " 或至門市洽詢。";
+  }
+
   function ProductCard(p) {
     var save = h("button", {
       class: "pc-save", "aria-label": "收藏",
@@ -154,7 +185,7 @@
 
     return h("article", { class: "product-card", onClick: function () { navigate("product", p); } },
       media,
-      h("div", { class: "pc-body" }, h("h3", { class: "pc-name" }, p.name), priceRow));
+      h("div", { class: "pc-body" }, h("h3", { class: "pc-name" }, p.name), priceRow, ChannelBadge(p)));
   }
 
   function ArticleCard(a, layout) {
@@ -557,10 +588,8 @@
         [["ri-leaf-line", "草本配方"], ["ri-fire-line", "可沖泡 / 可代煎"], ["ri-timer-line", "沖泡約 5 分鐘"], ["ri-truck-line", "歡迎來電洽詢"]].map(function (pair) {
           return h("div", {}, icon(pair[0]), pair[1]);
         })),
-      h("div", { class: "row wrap gap-2", style: "margin-top:var(--space-1)" },
-        LineButton({ label: "用 LINE 訂購 / 詢問" }),
-        Button({ variant: "secondary", icon: "ri-heart-3-line", label: "加入收藏" })),
-      h("p", { class: "fineprint" }, "※ 本站不提供線上結帳，歡迎透過 LINE 或來電 " + D.shop.phone + " 訂購，亦可至門市自取。"));
+      BuyActions(p),
+      h("p", { class: "fineprint" }, buyNote(p)));
 
     var gallery = h("div", { class: "stack gap-2" },
       h("div", { class: "gallery-main", style: bg(p.image) }),

@@ -326,3 +326,11 @@
 .row { display: flex; align-items: center; }
 .wrap { flex-wrap: wrap; }
 .items-start { align-items: flex-start; }
+
+/* ---- Purchase routing (蝦皮 / LINE) ---------------------- */
+.btn--shopee { background: #ee4d2d; color: #fff; border-color: #ee4d2d; }
+.btn--shopee:hover { background: #d8431f; border-color: #d8431f; }
+.pc-channel { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-sans); font-size: var(--fs-xs); color: var(--text-muted); }
+.pc-channel i { font-size: 14px; }
+.pc-channel.is-shopee { color: #ee4d2d; }
+.pc-channel.is-line { color: var(--line-green); }
