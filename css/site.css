@@ -318,6 +318,7 @@
 .pager { display: flex; justify-content: center; align-items: center; gap: var(--space-2); margin-top: var(--space-7); }
 .pager button { width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer; font-family: var(--font-latin); font-size: var(--fs-md); background: transparent; color: var(--text-muted); }
 .pager button.is-active { background: var(--champagne-100); color: var(--eggplant); }
+.pager button[disabled] { opacity: 0.35; cursor: default; }
 .filter-row { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-6); }
 .service-form { max-width: 640px; margin: 0 auto; background: var(--surface-warm); border: 1px solid var(--border-soft); border-radius: var(--radius-lg); padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-3); }
 .form-status { color: var(--seal-olive); font-size: var(--fs-sm); display: inline-flex; align-items: center; gap: 6px; }

@@ -177,19 +177,9 @@
   }
 
   function ProductCard(p) {
-    var save = h("button", {
-      class: "pc-save", "aria-label": "收藏",
-      onClick: function (e) {
-        e.stopPropagation(); e.preventDefault();
-        var saved = save.classList.toggle("is-saved");
-        save.firstChild.className = saved ? "ri-heart-3-fill" : "ri-heart-3-line";
-      }
-    }, icon("ri-heart-3-line"));
-
     var media = h("div", { class: "pc-media" },
       h("div", { class: "pc-img", style: bg(p.image) }),
-      (p.tags && p.tags.length) ? h("div", { class: "pc-tags" }, p.tags.map(function (t) { return Tag(t, "property"); })) : null,
-      save);
+      (p.tags && p.tags.length) ? h("div", { class: "pc-tags" }, p.tags.map(function (t) { return Tag(t, "property"); })) : null);
 
     var priceRow = (p.price != null) ? h("div", { class: "pc-price" },
       h("span", { class: "now" }, "NT " + p.price),
@@ -297,7 +287,6 @@
       h("nav", { class: "site-nav" }, navLinks),
       h("span", { class: "site-header__spacer" }),
       h("div", { class: "site-header__actions" },
-        h("button", { class: "site-header__search", "aria-label": "搜尋" }, icon("ri-search-line")),
         h("a", { class: "header-line", href: D.line, target: "_blank", rel: "noopener" },
           icon("ri-line-fill"),
           h("span", { class: "line-full" }, "LINE 諮詢"),
@@ -605,27 +594,57 @@
   function ArticlesScreen() {
     var cats = ["全部文章", "常見症狀", "養生配方", "中藥料理", "其他"];
     var active = "全部文章";
+    var PER_PAGE = 3;          // 每頁顯示幾篇文章（可調整）
+    var page = 1;
     var root = h("div", {}, SiteHeader({ route: "articles" }, false));
     var listWrap = h("div", { class: "stack gap-3" });
     var filterRow = h("div", { class: "filter-row" });
+    var pager = h("div", { class: "pager" });
 
+    function currentList() {
+      return active === "全部文章" ? D.articles : D.articles.filter(function (a) { return a.cat === active; });
+    }
     function renderList() {
+      var list = currentList();
+      var pages = Math.max(1, Math.ceil(list.length / PER_PAGE));
+      if (page > pages) page = pages;
       listWrap.innerHTML = "";
-      var list = active === "全部文章" ? D.articles : D.articles.filter(function (a) { return a.cat === active; });
-      list.forEach(function (a) { listWrap.appendChild(ArticleCard(a, "row")); });
+      var slice = list.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+      if (slice.length === 0) {
+        listWrap.appendChild(h("p", { style: "color:var(--text-muted);padding:var(--space-4) 0" }, "這個分類目前還沒有文章。"));
+      } else {
+        slice.forEach(function (a) { listWrap.appendChild(ArticleCard(a, "row")); });
+      }
+      renderPager(pages);
+    }
+    function goPage(n, pages) {
+      page = Math.min(Math.max(1, n), pages);
+      renderList();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    function renderPager(pages) {
+      pager.innerHTML = "";
+      if (pages <= 1) return;   // 只有一頁時不顯示分頁
+      var prev = h("button", { onClick: function () { goPage(page - 1, pages); } }, icon("ri-arrow-left-s-line"));
+      if (page === 1) prev.setAttribute("disabled", "disabled");
+      pager.appendChild(prev);
+      for (var n = 1; n <= pages; n++) {
+        (function (num) {
+          pager.appendChild(h("button", { class: num === page ? "is-active" : "", onClick: function () { goPage(num, pages); } }, String(num)));
+        })(n);
+      }
+      var next = h("button", { onClick: function () { goPage(page + 1, pages); } }, icon("ri-arrow-right-s-line"));
+      if (page === pages) next.setAttribute("disabled", "disabled");
+      pager.appendChild(next);
     }
     function renderFilters() {
       filterRow.innerHTML = "";
       cats.forEach(function (c) {
         filterRow.appendChild(Button({ size: "sm", variant: c === active ? "primary" : "secondary", label: c,
-          onClick: function () { active = c; renderFilters(); renderList(); } }));
+          onClick: function () { active = c; page = 1; renderFilters(); renderList(); } }));
       });
     }
     renderFilters(); renderList();
-
-    var pager = h("div", { class: "pager" }, h("button", {}, icon("ri-arrow-left-s-line")));
-    [1, 2, 3, 4].forEach(function (n) { pager.appendChild(h("button", { class: n === 1 ? "is-active" : "" }, String(n))); });
-    pager.appendChild(h("button", {}, icon("ri-arrow-right-s-line")));
 
     root.appendChild(h("section", { class: "bg-page", style: "min-height:60vh" },
       h("div", { class: "page", style: "padding:var(--space-8) var(--space-5) var(--space-9)" },
