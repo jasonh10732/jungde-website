@@ -63,6 +63,7 @@
       case "articles": return "#/articles";
       case "content": return "#/content/" + param;
       case "product": return "#/product/" + (param && param.id ? param.id : param);
+      case "article": return "#/article/" + param;
       default: return "#/";
     }
   }
@@ -76,11 +77,22 @@
     if (head === "category") return { route: "category", param: parts[1] || "tea" };
     if (head === "content") return { route: "content", param: parts[1] || "service" };
     if (head === "product") return { route: "product", param: parts[1] };
+    if (head === "article") return { route: "article", param: parts[1] };
     return { route: "home" };
   }
   function navigate(route, param) { location.hash = routeToHash(route, param); }
   function navLinkProps(route, param) {
     return { href: routeToHash(route, param) };
+  }
+
+  /* Image zoom / lightbox — click any .zoomable image to enlarge. */
+  function openLightbox(src) {
+    var img = h("img", { src: src, alt: "" });
+    function onKey(e) { if (e.key === "Escape") close(); }
+    function close() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); document.removeEventListener("keydown", onKey); }
+    var overlay = h("div", { class: "lightbox", onClick: close }, img);
+    document.addEventListener("keydown", onKey);
+    document.body.appendChild(overlay);
   }
 
   /* =========================================================
@@ -190,13 +202,47 @@
 
   function ArticleCard(a, layout) {
     var row = layout === "row";
-    return h("article", { class: "article-card " + (row ? "article-card--row" : "article-card--stacked") },
+    return h("article", { class: "article-card " + (row ? "article-card--row" : "article-card--stacked"),
+      style: "cursor:pointer", onClick: function () { navigate("article", a.id); } },
       h("div", { class: "ac-media", style: bg(a.image) }),
       h("div", { class: "ac-body" },
         h("div", { class: "ac-head" }, Tag(a.cat, "category"), h("h3", { class: "ac-title" }, a.title)),
         h("p", { class: "ac-excerpt" }, a.excerpt),
         h("div", { class: "ac-foot" },
-          h("a", { class: "ac-more", href: "#/articles" }, "閱讀更多 ", icon("ri-arrow-right-line")))));
+          h("a", { class: "ac-more", href: routeToHash("article", a.id) }, "閱讀更多 ", icon("ri-arrow-right-line")))));
+  }
+
+  /* Single-article page — full content shown when 閱讀更多 is clicked. */
+  function ArticleScreen(id) {
+    var list = D.articles || [];
+    var a = list.filter(function (x) { return x.id === id; })[0] || list[0];
+    var root = h("div", {}, SiteHeader({ route: "articles" }, false));
+    if (!a) { root.appendChild(SiteFooter()); return root; }
+    var related = list.filter(function (x) { return x.id !== a.id; }).slice(0, 3);
+    var bodyText = (a.body && String(a.body).trim()) ? a.body : a.excerpt;
+    var paras = String(bodyText).split(/\n{2,}|\n/).map(function (s) { return s.trim(); }).filter(Boolean);
+
+    root.appendChild(h("section", { class: "bg-page" },
+      h("div", { class: "page", style: "padding:var(--space-8) var(--space-5) var(--space-9);max-width:780px" },
+        h("div", { class: "breadcrumb" },
+          h("a", { href: "#/" }, "首頁"), h("span", { class: "sep" }, "/"),
+          h("a", { href: "#/articles" }, "漢方主題文章"), h("span", { class: "sep" }, "/"),
+          h("span", { class: "current" }, a.title)),
+        h("div", { class: "row wrap gap-2", style: "margin-bottom:var(--space-3)" }, Tag(a.cat, "category")),
+        h("h1", { style: "margin:0 0 var(--space-4)" }, a.title),
+        h("div", { class: "article-hero zoomable", style: bg(a.image), onClick: function () { openLightbox(a.image); } }),
+        h.apply(null, ["div", { class: "article-body" }].concat(paras.map(function (t) { return h("p", {}, t); }))),
+        h("div", { style: "margin-top:var(--space-6)" },
+          Button({ variant: "secondary", size: "sm", icon: "ri-arrow-left-line", label: "回文章列表", onClick: function () { navigate("articles"); } })))));
+
+    if (related.length) {
+      root.appendChild(h("section", { class: "bg-card" },
+        h("div", { class: "page", style: "padding:var(--space-9) var(--space-5)" },
+          SectionHeading({ title: "其他文章", size: "sm", style: "margin-bottom:var(--space-4)" }),
+          h.apply(null, ["div", { class: "jd-grid-3" }].concat(related.map(function (x) { return ArticleCard(x, "stacked"); }))))));
+    }
+    root.appendChild(SiteFooter());
+    return root;
   }
 
   function Field(o) {
@@ -318,9 +364,27 @@
     ];
     var root = h("div", {});
 
-    // Hero
+    // Hero — 3-slide carousel (existing photos; auto-rotates, clickable dots)
+    var heroSlides = ["assets/photo-store.png", "assets/photo-herbs.png", "assets/photo-brew.png"];
+    var slidesWrap = h.apply(null, ["div", { class: "hero__slides" }].concat(heroSlides.map(function (src, i) {
+      return h("div", { class: "hero__slide" + (i === 0 ? " is-active" : ""), style: bg(src) });
+    })));
+    var dotsWrap = h.apply(null, ["div", { class: "hero__dots" }].concat(heroSlides.map(function (_, i) {
+      return h("button", { class: "hero__dot" + (i === 0 ? " is-active" : ""), "aria-label": "第 " + (i + 1) + " 張", onClick: function () { heroGo(i); } });
+    })));
+    var heroIdx = 0;
+    function heroGo(n) {
+      heroIdx = (n + heroSlides.length) % heroSlides.length;
+      for (var k = 0; k < slidesWrap.children.length; k++) {
+        slidesWrap.children[k].classList.toggle("is-active", k === heroIdx);
+        dotsWrap.children[k].classList.toggle("is-active", k === heroIdx);
+      }
+    }
+    if (!window.matchMedia || !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      heroTimer = setInterval(function () { heroGo(heroIdx + 1); }, 5000);
+    }
     var hero = h("section", { class: "hero" },
-      h("div", { class: "hero__bg", style: bg("assets/photo-store.png") }),
+      slidesWrap,
       h("div", { class: "hero__scrim", style: "background:linear-gradient(180deg, rgba(86,52,64,.55), rgba(86,52,64,.32) 40%, rgba(86,52,64,.6))" }),
       h("div", { class: "hero__content" },
         SiteHeader({ route: "home" }, true),
@@ -330,7 +394,8 @@
           h("p", {}, "近百年老店，佐以溫和漢方草本。我們從不做過多的推銷，只推薦最適合您的。"),
           h("div", { class: "hero-actions" },
             Button({ label: "了解種德中藥房", onClick: function () { navigate("about"); } }),
-            LineButton({ label: "加入 LINE 好友" })))));
+            LineButton({ label: "加入 LINE 好友" })))),
+      dotsWrap);
     root.appendChild(hero);
 
     // Benefits band
@@ -591,12 +656,12 @@
       BuyActions(p),
       h("p", { class: "fineprint" }, buyNote(p)));
 
+    var thumbs = ["assets/photo-brew.png", "assets/photo-chamomile.jpg", "assets/photo-herbs.png"];
     var gallery = h("div", { class: "stack gap-2" },
-      h("div", { class: "gallery-main", style: bg(p.image) }),
-      h("div", { class: "gallery-thumbs" },
-        ["assets/photo-brew.png", "assets/photo-chamomile.jpg", "assets/photo-herbs.png"].map(function (f) {
-          return h("div", { style: bg(f) });
-        })));
+      h("div", { class: "gallery-main zoomable", style: bg(p.image), onClick: function () { openLightbox(p.image); } }),
+      h.apply(null, ["div", { class: "gallery-thumbs" }].concat(thumbs.map(function (f) {
+        return h("div", { class: "zoomable", style: bg(f), onClick: function () { openLightbox(f); } });
+      }))));
 
     root.appendChild(h("section", { class: "bg-page" },
       h("div", { class: "page", style: "padding:var(--space-6) var(--space-5) var(--space-9)" },
@@ -618,7 +683,9 @@
   /* =========================================================
      Render / router
      ========================================================= */
+  var heroTimer = null;
   function render() {
+    if (heroTimer) { clearInterval(heroTimer); heroTimer = null; }
     var r = parseHash();
     var mount = document.getElementById("app");
     var view;
@@ -628,6 +695,7 @@
       case "articles": view = ArticlesScreen(); break;
       case "content": view = ContentScreen(r.param); break;
       case "product": view = ProductScreen(r.param); break;
+      case "article": view = ArticleScreen(r.param); break;
       default: view = HomeScreen();
     }
     mount.innerHTML = "";

@@ -334,3 +334,22 @@
 .pc-channel i { font-size: 14px; }
 .pc-channel.is-shopee { color: #ee4d2d; }
 .pc-channel.is-line { color: var(--line-green); }
+
+/* ---- Hero carousel --------------------------------------- */
+.hero__slides { position: absolute; inset: 0; }
+.hero__slide { position: absolute; inset: 0; background-size: cover; background-position: center; background-repeat: no-repeat; opacity: 0; transition: opacity 900ms ease; }
+.hero__slide.is-active { opacity: 1; }
+.hero__dots { position: absolute; left: 0; right: 0; bottom: 16px; display: flex; justify-content: center; gap: 8px; z-index: 3; }
+.hero__dot { width: 10px; height: 10px; padding: 0; border: none; border-radius: 50%; background: rgba(255,255,255,.5); cursor: pointer; transition: background var(--dur) var(--ease-soft); }
+.hero__dot.is-active { background: #fff; }
+.hero__dot:hover { background: rgba(255,255,255,.8); }
+
+/* ---- Image zoom / lightbox ------------------------------- */
+.zoomable { cursor: zoom-in; }
+.lightbox { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.82); display: grid; place-items: center; padding: 24px; cursor: zoom-out; }
+.lightbox img { max-width: 92vw; max-height: 92vh; border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+
+/* ---- Single article page --------------------------------- */
+.article-hero { aspect-ratio: 16 / 9; border-radius: var(--radius-md); background-size: cover; background-position: center; box-shadow: var(--shadow-card); margin-bottom: var(--space-5); }
+.article-body { display: flex; flex-direction: column; gap: var(--space-3); font-size: var(--fs-md); line-height: var(--lh-md); color: var(--text-body); }
+.article-body p { margin: 0; }

@@ -170,4 +170,5 @@ collections:
                 options: ["常見症狀", "養生配方", "中藥料理", "其他"]
               - { name: title, label: "標題", widget: string }
               - { name: image, label: "圖片", widget: image }
-              - { name: excerpt, label: "摘要", widget: text }
+              - { name: excerpt, label: "摘要（列表上顯示的短介紹）", widget: text }
+              - { name: body, label: "完整內文（點「閱讀更多」會看到）", widget: text, required: false, hint: "整篇文章內容，段落之間空一行即可分段" }
