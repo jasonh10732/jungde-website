@@ -64,6 +64,9 @@
       case "content": return "#/content/" + param;
       case "product": return "#/product/" + (param && param.id ? param.id : param);
       case "article": return "#/article/" + param;
+      case "cart": return "#/cart";
+      case "checkout": return "#/checkout";
+      case "order-done": return "#/order-done";
       default: return "#/";
     }
   }
@@ -78,6 +81,9 @@
     if (head === "content") return { route: "content", param: parts[1] || "service" };
     if (head === "product") return { route: "product", param: parts[1] };
     if (head === "article") return { route: "article", param: parts[1] };
+    if (head === "cart") return { route: "cart" };
+    if (head === "checkout") return { route: "checkout" };
+    if (head === "order-done") return { route: "order-done" };
     return { route: "home" };
   }
   function navigate(route, param) { location.hash = routeToHash(route, param); }
@@ -148,11 +154,24 @@
   /* ---- Purchase routing (固定→蝦皮 / 客製→LINE) ------------ */
   function shopeeActive(p) { return !!(p && p.shopeeUrl && String(p.shopeeUrl).trim()); }
 
+  /* Effective sales mode: cart (自家販售) / shopee / line (客製詢問). */
+  function productMode(p) {
+    var m = p && p.mode;
+    if (m === "cart" || m === "shopee" || m === "line") {
+      if (m === "shopee" && !shopeeActive(p)) return "cart";
+      return m;
+    }
+    return shopeeActive(p) ? "shopee" : "cart";
+  }
+
   function ChannelBadge(p) {
-    var shop = shopeeActive(p);
-    return h("span", { class: "pc-channel " + (shop ? "is-shopee" : "is-line") },
-      icon(shop ? "ri-shopping-bag-3-line" : "ri-line-fill"),
-      shop ? "蝦皮購買" : "LINE 訂購 / 客製");
+    var map = {
+      shopee: ["ri-shopping-bag-3-line", "蝦皮購買", "is-shopee"],
+      cart: ["ri-shopping-cart-2-line", "線上購物車", "is-cart"],
+      line: ["ri-line-fill", "LINE 訂購 / 客製", "is-line"],
+    };
+    var c = map[productMode(p)];
+    return h("span", { class: "pc-channel " + c[2] }, icon(c[0]), c[1]);
   }
 
   function ShopeeButton(opts) {
@@ -162,19 +181,63 @@
   }
 
   function BuyActions(p) {
-    if (shopeeActive(p)) {
+    var m = productMode(p);
+    if (m === "shopee") {
       return h("div", { class: "row wrap gap-2", style: "margin-top:var(--space-1)" },
         ShopeeButton({ href: p.shopeeUrl, label: "到蝦皮購買" }),
         LineButton({ variant: "outline", label: "用 LINE 詢問" }));
     }
+    if (m === "line") {
+      return h("div", { class: "row wrap gap-2", style: "margin-top:var(--space-1)" },
+        LineButton({ label: "我要訂購 / 我要客製" }));
+    }
     return h("div", { class: "row wrap gap-2", style: "margin-top:var(--space-1)" },
-      LineButton({ label: "我要訂購 / 我要客製" }));
+      Button({ variant: "primary", icon: "ri-shopping-cart-2-line", label: "加入購物車",
+        onClick: function () { cartAdd(p, 1); toast("已加入購物車"); } }),
+      LineButton({ variant: "outline", label: "用 LINE 詢問" }));
   }
 
   function buyNote(p) {
-    if (shopeeActive(p)) return "※ 此為固定商品，由蝦皮處理結帳與寄送；網路價含包裝與物流成本，可能與門市價不同。";
-    return "※ 客製商品由專人於 LINE 依您的需求確認內容並提供報價，本站不提供線上結帳，亦可來電 " + D.shop.phone + " 或至門市洽詢。";
+    var m = productMode(p);
+    if (m === "shopee") return "※ 此為固定商品，由蝦皮處理結帳與寄送；網路價含包裝與物流成本，可能與門市價不同。";
+    if (m === "line") return "※ 客製商品由專人於 LINE 依您的需求確認內容並提供報價，本站不提供線上結帳，亦可來電 " + D.shop.phone + " 或至門市洽詢。";
+    return "※ 採「先下單、後付款」：送出訂單後我們會與您聯繫確認，並提供轉帳／LINE Pay／門市自取方式，恕不線上刷卡。";
   }
+
+  /* ---- Shopping cart (localStorage) ----------------------- */
+  var CART_KEY = "jd_cart_v1";
+  function cartRead() { try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; } catch (e) { return []; } }
+  function cartWrite(items) { try { localStorage.setItem(CART_KEY, JSON.stringify(items)); } catch (e) {} updateCartCount(); }
+  function cartCount() { return cartRead().reduce(function (s, i) { return s + i.qty; }, 0); }
+  function cartTotal() { return cartRead().reduce(function (s, i) { return s + i.price * i.qty; }, 0); }
+  function cartAdd(p, qty) {
+    qty = qty || 1;
+    var items = cartRead(), found = null;
+    items.forEach(function (i) { if (i.id === p.id) found = i; });
+    if (found) found.qty += qty;
+    else items.push({ id: p.id, name: p.name, price: p.price || 0, image: p.image, qty: qty });
+    cartWrite(items);
+  }
+  function cartSetQty(id, qty) {
+    var items = cartRead();
+    if (qty <= 0) { cartWrite(items.filter(function (i) { return i.id !== id; })); return; }
+    items.forEach(function (i) { if (i.id === id) i.qty = qty; });
+    cartWrite(items);
+  }
+  function cartRemove(id) { cartWrite(cartRead().filter(function (i) { return i.id !== id; })); }
+  function cartClear() { cartWrite([]); }
+  function updateCartCount() {
+    var n = cartCount(), els = document.querySelectorAll(".cart-count");
+    for (var i = 0; i < els.length; i++) { els[i].textContent = String(n); els[i].classList.toggle("is-empty", n === 0); }
+  }
+
+  function toast(msg) {
+    var t = h("div", { class: "toast" }, msg);
+    document.body.appendChild(t);
+    requestAnimationFrame(function () { t.classList.add("show"); });
+    setTimeout(function () { t.classList.remove("show"); setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 300); }, 1800);
+  }
+  function copyText(txt) { try { navigator.clipboard.writeText(txt); return true; } catch (e) { return false; } }
 
   function ProductCard(p) {
     var media = h("div", { class: "pc-media" },
@@ -287,6 +350,9 @@
       h("nav", { class: "site-nav" }, navLinks),
       h("span", { class: "site-header__spacer" }),
       h("div", { class: "site-header__actions" },
+        h("a", { class: "header-cart", href: "#/cart", "aria-label": "購物車" },
+          icon("ri-shopping-cart-2-line"),
+          h("span", { class: "cart-count" + (cartCount() ? "" : " is-empty") }, String(cartCount()))),
         h("a", { class: "header-line", href: D.line, target: "_blank", rel: "noopener" },
           icon("ri-line-fill"),
           h("span", { class: "line-full" }, "LINE 諮詢"),
@@ -702,6 +768,137 @@
   /* =========================================================
      Render / router
      ========================================================= */
+  /* ---- Cart page ------------------------------------------ */
+  function CartScreen() {
+    var root = h("div", {}, SiteHeader({ route: null }, false));
+    var body = h("div", { class: "page", style: "padding:var(--space-8) var(--space-5) var(--space-9);max-width:900px" });
+    function refresh() {
+      body.innerHTML = "";
+      body.appendChild(SectionHeading({ title: "購物車", size: "md", style: "margin-bottom:var(--space-5)" }));
+      var items = cartRead();
+      if (items.length === 0) {
+        body.appendChild(h("p", { class: "cart-empty" }, "購物車目前是空的。"));
+        body.appendChild(h("div", { style: "margin-top:var(--space-4)" },
+          Button({ variant: "secondary", label: "去逛逛商品", onClick: function () { navigate("category", "tea"); } })));
+        return;
+      }
+      var list = h("div", { class: "cart-list" });
+      items.forEach(function (it) {
+        list.appendChild(h("div", { class: "cart-row" },
+          h("div", { class: "cart-thumb", style: bg(it.image) }),
+          h("div", { class: "cart-info" },
+            h("div", { class: "cart-name" }, it.name),
+            h("div", { class: "cart-price" }, "NT " + it.price)),
+          h("div", { class: "cart-qty" },
+            h("button", { class: "qbtn", "aria-label": "減少", onClick: function () { cartSetQty(it.id, it.qty - 1); refresh(); } }, "−"),
+            h("span", { class: "cart-qty-num" }, String(it.qty)),
+            h("button", { class: "qbtn", "aria-label": "增加", onClick: function () { cartSetQty(it.id, it.qty + 1); refresh(); } }, "＋")),
+          h("div", { class: "cart-sub" }, "NT " + (it.price * it.qty)),
+          h("button", { class: "cart-del", "aria-label": "移除", onClick: function () { cartRemove(it.id); refresh(); } }, icon("ri-delete-bin-line"))));
+      });
+      body.appendChild(list);
+      body.appendChild(h("div", { class: "cart-foot" },
+        h("div", { class: "cart-total" }, h("span", {}, "合計"), h("span", { class: "amount" }, "NT " + cartTotal())),
+        h("div", { class: "cart-actions" },
+          Button({ variant: "ghost", size: "sm", label: "繼續購物", onClick: function () { navigate("category", "tea"); } }),
+          Button({ variant: "primary", icon: "ri-arrow-right-line", iconRight: true, label: "前往結帳", onClick: function () { navigate("checkout"); } }))));
+    }
+    refresh();
+    root.appendChild(body);
+    root.appendChild(SiteFooter());
+    return root;
+  }
+
+  /* ---- Checkout page (先下單、後付款；送到 Netlify Forms) --- */
+  function CheckoutScreen() {
+    var root = h("div", {}, SiteHeader({ route: null }, false));
+    var body = h("div", { class: "page", style: "padding:var(--space-8) var(--space-5) var(--space-9);max-width:760px" });
+    body.appendChild(SectionHeading({ eyebrow: "結帳", title: "填寫訂購資料", style: "margin-bottom:var(--space-5)" }));
+    var items = cartRead();
+    if (items.length === 0) {
+      body.appendChild(h("p", { class: "cart-empty" }, "購物車是空的，無法結帳。"));
+      body.appendChild(h("div", { style: "margin-top:var(--space-4)" },
+        Button({ variant: "secondary", label: "去逛逛商品", onClick: function () { navigate("category", "tea"); } })));
+      root.appendChild(body); root.appendChild(SiteFooter()); return root;
+    }
+
+    var summary = h("div", { class: "order-summary" });
+    items.forEach(function (it) {
+      summary.appendChild(h("div", { class: "os-row" }, h("span", {}, it.name + " ×" + it.qty), h("span", {}, "NT " + (it.price * it.qty))));
+    });
+    summary.appendChild(h("div", { class: "os-row os-total" }, h("span", {}, "合計"), h("span", {}, "NT " + cartTotal())));
+
+    var fName = Field({ label: "姓名", name: "姓名", required: true, placeholder: "您的姓名" });
+    var fPhone = Field({ label: "聯絡電話", name: "電話", required: true, icon: "ri-phone-line", placeholder: "09xx-xxx-xxx" });
+    var fLine = Field({ label: "LINE ID（選填）", name: "LINE ID", placeholder: "方便我們用 LINE 聯繫" });
+    var fAddr = Field({ label: "宅配地址（選宅配才需填）", name: "地址", placeholder: "收件地址" });
+    var nameI = fName.querySelector("input"), phoneI = fPhone.querySelector("input"), lineI = fLine.querySelector("input"), addrI = fAddr.querySelector("input");
+    var pickupS = h("select", { class: "field-select", name: "取貨方式" },
+      h("option", { value: "門市自取" }, "門市自取"), h("option", { value: "宅配到府" }, "宅配到府"));
+    var fPickup = h("label", { class: "field" }, h("span", {}, "取貨方式"), pickupS);
+    var noteT = h("textarea", { class: "field-textarea", rows: "3", name: "備註", placeholder: "其他需求（口味、數量備註…）" });
+    var fNote = h("label", { class: "field" }, h("span", {}, "備註"), noteT);
+    var status = h("p", { class: "fineprint", style: "color:var(--redwood);display:none" }, "");
+    var submitBtn = Button({ variant: "primary", type: "submit", icon: "ri-check-line", label: "送出訂單" });
+
+    function submitOrder() {
+      var lines = cartRead().map(function (it) { return "・" + it.name + " ×" + it.qty + " = NT " + (it.price * it.qty); });
+      var detail = lines.join("\n") + "\n合計：NT " + cartTotal();
+      var data = {
+        "form-name": "order", "姓名": nameI.value, "電話": phoneI.value, "LINE ID": lineI.value,
+        "取貨方式": pickupS.value, "地址": addrI.value, "備註": noteT.value, "訂單明細": detail, "總計": "NT " + cartTotal(),
+      };
+      var enc = Object.keys(data).map(function (k) { return encodeURIComponent(k) + "=" + encodeURIComponent(data[k]); }).join("&");
+      submitBtn.setAttribute("disabled", "disabled");
+      fetch("/", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: enc })
+        .then(function () {
+          try { sessionStorage.setItem("jd_last_order", JSON.stringify({ detail: detail })); } catch (e) {}
+          cartClear();
+          navigate("order-done");
+        })
+        .catch(function () {
+          submitBtn.removeAttribute("disabled");
+          status.style.display = "block";
+          status.textContent = "送出失敗，請稍後再試，或直接用 LINE 與我們聯繫。";
+        });
+    }
+
+    var form = h("form", { class: "checkout-form", name: "order", onSubmit: function (e) { e.preventDefault(); submitOrder(); } },
+      h("h3", { class: "checkout-h" }, "訂單明細"), summary,
+      h("h3", { class: "checkout-h" }, "聯絡與取貨"),
+      h("div", { class: "jd-form-2" }, fName, fPhone),
+      fLine,
+      h("div", { class: "jd-form-2" }, fPickup, fAddr),
+      fNote,
+      h("p", { class: "fineprint" }, "※ 本網站採「先下單、後付款」：送出訂單後，我們會盡快與您聯繫確認內容，並提供轉帳／LINE Pay／門市自取方式，恕不提供線上刷卡。"),
+      h("div", { style: "margin-top:var(--space-3)" }, submitBtn), status);
+    body.appendChild(form);
+    root.appendChild(body);
+    root.appendChild(SiteFooter());
+    return root;
+  }
+
+  /* ---- Order confirmation --------------------------------- */
+  function OrderDoneScreen() {
+    var root = h("div", {}, SiteHeader({ route: null }, false));
+    var last = null; try { last = JSON.parse(sessionStorage.getItem("jd_last_order")); } catch (e) {}
+    var body = h("div", { class: "page center-text", style: "padding:var(--space-10) var(--space-5);max-width:640px" });
+    body.appendChild(h("div", { class: "order-done-icon" }, icon("ri-checkbox-circle-fill")));
+    body.appendChild(h("h1", { style: "margin:var(--space-3) 0 var(--space-2)" }, "已收到您的訂單"));
+    body.appendChild(h("p", { style: "color:var(--text-body)" }, "感謝您的訂購！我們會盡快與您聯繫確認訂單內容，並提供付款方式（轉帳／LINE Pay／門市自取）。"));
+    if (last && last.detail) {
+      body.appendChild(h("pre", { class: "order-recap" }, last.detail));
+      body.appendChild(h("div", { class: "row wrap gap-2", style: "justify-content:center;margin-top:var(--space-4)" },
+        Button({ variant: "secondary", size: "sm", icon: "ri-file-copy-line", label: "複製訂單內容", onClick: function () { if (copyText(last.detail)) toast("已複製，可貼到 LINE"); } }),
+        LineButton({ size: "sm", label: "用 LINE 傳給我們" })));
+    }
+    body.appendChild(h("div", { style: "margin-top:var(--space-6)" },
+      Button({ variant: "ghost", label: "回首頁", onClick: function () { navigate("home"); } })));
+    root.appendChild(body);
+    root.appendChild(SiteFooter());
+    return root;
+  }
+
   var heroTimer = null;
   function render() {
     if (heroTimer) { clearInterval(heroTimer); heroTimer = null; }
@@ -715,6 +912,9 @@
       case "content": view = ContentScreen(r.param); break;
       case "product": view = ProductScreen(r.param); break;
       case "article": view = ArticleScreen(r.param); break;
+      case "cart": view = CartScreen(); break;
+      case "checkout": view = CheckoutScreen(); break;
+      case "order-done": view = OrderDoneScreen(); break;
       default: view = HomeScreen();
     }
     mount.innerHTML = "";
@@ -767,6 +967,7 @@
       window.JD_DATA = D;
 
       render();
+      updateCartCount();
       window.addEventListener("hashchange", render);
     }).catch(function (e) {
       document.getElementById("app").innerHTML =
