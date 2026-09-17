@@ -55,8 +55,9 @@
   .jd-split-flush,
   .jd-grid-2,
   .jd-grid-3,
-  .jd-grid-4,
   .jd-form-2,
   .jd-footer-grid { grid-template-columns: 1fr; }
+  /* 商品格線在手機維持一行兩張（不塌成一欄） */
+  .jd-grid-4 { grid-template-columns: repeat(2, 1fr); }
   .jd-split { gap: var(--space-4); }
 }

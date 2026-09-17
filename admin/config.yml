@@ -38,6 +38,7 @@ collections:
               - { name: hoursWeekend, label: "週末營業時間", widget: string }
               - { name: phone, label: "電話", widget: string }
               - { name: email, label: "Email", widget: string }
+              - { name: remit, label: "匯款資訊（結帳頁顯示；銀行／戶名／帳號，可換行）", widget: text, required: false }
 
   # ---- 商品（新增 / 下架就在這裡操作） ----
   - name: "products"
@@ -173,3 +174,30 @@ collections:
               - { name: image, label: "圖片", widget: image }
               - { name: excerpt, label: "摘要（列表上顯示的短介紹）", widget: text }
               - { name: body, label: "完整內文（點「閱讀更多」會看到）", widget: text, required: false, hint: "整篇文章內容，段落之間空一行即可分段" }
+
+  # ---- 優惠券（客人結帳時輸入代碼） ----
+  - name: "coupons"
+    label: "優惠券"
+    files:
+      - name: "list"
+        label: "優惠券列表"
+        file: "content/coupons.json"
+        fields:
+          - name: items
+            label: "優惠券"
+            label_singular: "優惠券"
+            widget: list
+            summary: "{{fields.code}}"
+            fields:
+              - { name: code, label: "代碼（客人結帳輸入，建議英數）", widget: string }
+              - name: type
+                label: "折扣方式"
+                widget: select
+                default: "amount"
+                options:
+                  - { label: "折固定金額（NT）", value: "amount" }
+                  - { label: "折百分比（%）", value: "percent" }
+              - { name: value, label: "折扣值（金額填 100＝折100；百分比填 10＝減10%即9折）", widget: number, value_type: int, min: 0 }
+              - { name: enabled, label: "啟用", widget: boolean, default: true }
+              - { name: minSpend, label: "最低消費（NT，選填）", widget: number, required: false, value_type: int, min: 0 }
+              - { name: expiry, label: "到期日（選填）", widget: date, required: false, format: "YYYY-MM-DD" }

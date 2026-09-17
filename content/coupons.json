@@ -1,0 +1,6 @@
+{
+  "items": [
+    { "code": "WELCOME100", "type": "amount", "value": 100, "enabled": true, "minSpend": 500 },
+    { "code": "VIP10", "type": "percent", "value": 10, "enabled": true }
+  ]
+}
