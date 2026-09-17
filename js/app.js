@@ -67,6 +67,8 @@
       case "cart": return "#/cart";
       case "checkout": return "#/checkout";
       case "order-done": return "#/order-done";
+      case "search": return "#/search";
+      case "tag": return "#/tag/" + encodeURIComponent(param);
       default: return "#/";
     }
   }
@@ -84,6 +86,8 @@
     if (head === "cart") return { route: "cart" };
     if (head === "checkout") return { route: "checkout" };
     if (head === "order-done") return { route: "order-done" };
+    if (head === "search") return { route: "search" };
+    if (head === "tag") return { route: "tag", param: parts[1] ? decodeURIComponent(parts[1]) : "" };
     return { route: "home" };
   }
   function navigate(route, param) { location.hash = routeToHash(route, param); }
@@ -127,8 +131,10 @@
       icon("ri-line-fill"), opts.label || "加入 LINE 好友");
   }
 
-  function Tag(text, variant, size) {
-    return h("span", { class: "tag tag--" + (variant || "category") + (size === "lg" ? " tag--lg" : "") }, text);
+  function Tag(text, variant, size, onClick) {
+    var attrs = { class: "tag tag--" + (variant || "category") + (size === "lg" ? " tag--lg" : "") + (onClick ? " tag--clickable" : "") };
+    if (onClick) attrs.onClick = onClick;
+    return h("span", attrs, text);
   }
 
   function SectionHeading(opts) {
@@ -151,27 +157,13 @@
         o.sub ? h("span", { class: "fi-sub" }, o.sub) : null));
   }
 
-  /* ---- Purchase routing (固定→蝦皮 / 客製→LINE) ------------ */
+  /* ---- Purchase routing (購物車為主 / 蝦皮附加 / 客製走 LINE) - */
   function shopeeActive(p) { return !!(p && p.shopeeUrl && String(p.shopeeUrl).trim()); }
-
-  /* Effective sales mode: cart (自家販售) / shopee / line (客製詢問). */
-  function productMode(p) {
-    var m = p && p.mode;
-    if (m === "cart" || m === "shopee" || m === "line") {
-      if (m === "shopee" && !shopeeActive(p)) return "cart";
-      return m;
-    }
-    return shopeeActive(p) ? "shopee" : "cart";
-  }
+  function isCustom(p) { return !!(p && (p.custom === true || p.mode === "line")); }
 
   function ChannelBadge(p) {
-    var map = {
-      shopee: ["ri-shopping-bag-3-line", "蝦皮購買", "is-shopee"],
-      cart: ["ri-shopping-cart-2-line", "線上購物車", "is-cart"],
-      line: ["ri-line-fill", "LINE 訂購 / 客製", "is-line"],
-    };
-    var c = map[productMode(p)];
-    return h("span", { class: "pc-channel " + c[2] }, icon(c[0]), c[1]);
+    if (isCustom(p)) return h("span", { class: "pc-channel is-line" }, icon("ri-line-fill"), "LINE 訂購 / 客製");
+    return h("span", { class: "pc-channel is-cart" }, icon("ri-shopping-cart-2-line"), "線上購物車");
   }
 
   function ShopeeButton(opts) {
@@ -181,13 +173,7 @@
   }
 
   function BuyActions(p) {
-    var m = productMode(p);
-    if (m === "shopee") {
-      return h("div", { class: "row wrap gap-2", style: "margin-top:var(--space-1)" },
-        ShopeeButton({ href: p.shopeeUrl, label: "到蝦皮購買" }),
-        LineButton({ variant: "outline", label: "用 LINE 詢問" }));
-    }
-    if (m === "line") {
+    if (isCustom(p)) {
       return h("div", { class: "row wrap gap-2", style: "margin-top:var(--space-1)" },
         LineButton({ label: "我要訂購 / 我要客製" }));
     }
@@ -202,14 +188,15 @@
       stepper,
       Button({ variant: "primary", icon: "ri-shopping-cart-2-line", label: "加入購物車",
         onClick: function () { cartAdd(p, qty); toast("已加入購物車 ×" + qty); } }),
+      shopeeActive(p) ? ShopeeButton({ href: p.shopeeUrl, label: "到蝦皮購買" }) : null,
       LineButton({ variant: "outline", label: "用 LINE 詢問" }));
   }
 
   function buyNote(p) {
-    var m = productMode(p);
-    if (m === "shopee") return "※ 此為固定商品，由蝦皮處理結帳與寄送；網路價含包裝與物流成本，可能與門市價不同。";
-    if (m === "line") return "※ 客製商品由專人於 LINE 依您的需求確認內容並提供報價，本站不提供線上結帳，亦可來電 " + D.shop.phone + " 或至門市洽詢。";
-    return "※ 採「先下單、後付款」：送出訂單後我們會與您聯繫確認，並提供轉帳／LINE Pay／門市自取方式，恕不線上刷卡。";
+    if (isCustom(p)) return "※ 客製商品由專人於 LINE 依您的需求確認內容並提供報價，本站不提供線上結帳，亦可來電 " + D.shop.phone + " 或至門市洽詢。";
+    var base = "※ 採「先下單、後付款」：送出訂單後我們會與您聯繫確認，並提供轉帳／LINE Pay／門市自取方式，恕不線上刷卡。";
+    if (shopeeActive(p)) base += "（此商品亦可到蝦皮購買。）";
+    return base;
   }
 
   /* ---- Shopping cart (localStorage) ----------------------- */
@@ -250,13 +237,15 @@
   function ProductCard(p) {
     var media = h("div", { class: "pc-media" },
       h("div", { class: "pc-img", style: bg(p.image) }),
-      (p.tags && p.tags.length) ? h("div", { class: "pc-tags" }, p.tags.map(function (t) { return Tag(t, "property"); })) : null);
+      (p.tags && p.tags.length) ? h("div", { class: "pc-tags" }, p.tags.map(function (t) {
+        return Tag(t, "property", null, function (e) { e.stopPropagation(); e.preventDefault(); navigate("tag", t); });
+      })) : null);
 
     var priceRow = (p.price != null) ? h("div", { class: "pc-price" },
       h("span", { class: "now" }, "NT " + p.price),
       (p.oldPrice != null) ? h("span", { class: "old" }, "NT " + p.oldPrice) : null) : null;
 
-    var quickAdd = productMode(p) === "cart"
+    var quickAdd = !isCustom(p)
       ? h("button", { class: "pc-add", type: "button", "aria-label": "加入購物車",
           onClick: function (e) { e.stopPropagation(); e.preventDefault(); cartAdd(p, 1); toast("已加入購物車"); } },
           icon("ri-add-line"), "加入購物車")
@@ -384,6 +373,7 @@
       h("nav", { class: "site-nav" }, navLinks),
       h("span", { class: "site-header__spacer" }),
       h("div", { class: "site-header__actions" },
+        h("a", { class: "header-search", href: "#/search", "aria-label": "搜尋" }, icon("ri-search-line")),
         h("a", { class: "header-cart", href: "#/cart", "aria-label": "購物車" },
           icon("ri-shopping-cart-2-line"),
           h("span", { class: "cart-count" + (cartCount() ? "" : " is-empty") }, String(cartCount()))),
@@ -761,7 +751,9 @@
     var root = h("div", {}, SiteHeader({ route: "category", param: p.cat }, false));
 
     var info = h("div", { class: "stack gap-3" },
-      h("div", { class: "row wrap", style: "gap:8px" }, p.tags.map(function (t) { return Tag(t, "category"); })),
+      h("div", { class: "row wrap", style: "gap:8px" }, p.tags.map(function (t) {
+        return Tag(t, "category", null, function () { navigate("tag", t); });
+      })),
       h("h1", { style: "margin:0" }, p.name),
       h("p", { style: "font-size:var(--fs-md);line-height:1.8;color:var(--text-body);margin:0" },
         "依據藥材特性，從篩藥、清洗到曬藥層層把關，調配最好喝、不苦澀的自然味道。小份量可沖泡設計，替忙碌的您節省時間，也喝得到真材實料的溫柔呵護。"),
@@ -989,6 +981,62 @@
     return root;
   }
 
+  /* ---- Search page (商品 + 文章) -------------------------- */
+  function SearchScreen() {
+    var root = h("div", {}, SiteHeader({ route: "search" }, false));
+    var body = h("div", { class: "page", style: "padding:var(--space-8) var(--space-5) var(--space-9);max-width:1000px" });
+    var input = h("input", { class: "search-input", type: "search", placeholder: "搜尋商品或文章…（例如：茶、去濕、換季）" });
+    var results = h("div", {});
+    function draw() {
+      var q = (input.value || "").trim().toLowerCase();
+      results.innerHTML = "";
+      if (!q) { results.appendChild(h("p", { class: "cart-empty" }, "輸入關鍵字開始搜尋。")); return; }
+      var prods = (D.products || []).filter(function (p) {
+        return (String(p.name || "").toLowerCase().indexOf(q) >= 0) ||
+          (p.tags || []).some(function (t) { return String(t).toLowerCase().indexOf(q) >= 0; });
+      });
+      var arts = (D.articles || []).filter(function (a) {
+        return (String(a.title || "").toLowerCase().indexOf(q) >= 0) ||
+          (String(a.excerpt || "").toLowerCase().indexOf(q) >= 0) ||
+          (String(a.cat || "").toLowerCase().indexOf(q) >= 0);
+      });
+      if (!prods.length && !arts.length) { results.appendChild(h("p", { class: "cart-empty" }, "找不到「" + input.value.trim() + "」相關的商品或文章。")); return; }
+      if (prods.length) {
+        results.appendChild(SectionHeading({ title: "商品", size: "sm", style: "margin:var(--space-4) 0 var(--space-3)" }));
+        results.appendChild(h.apply(null, ["div", { class: "jd-grid-4" }].concat(prods.map(ProductCard))));
+      }
+      if (arts.length) {
+        results.appendChild(SectionHeading({ title: "文章", size: "sm", style: "margin:var(--space-6) 0 var(--space-3)" }));
+        results.appendChild(h.apply(null, ["div", { class: "stack gap-3" }].concat(arts.map(function (a) { return ArticleCard(a, "row"); }))));
+      }
+    }
+    input.addEventListener("input", draw);
+    body.appendChild(SectionHeading({ eyebrow: "搜尋", title: "找找看", style: "margin-bottom:var(--space-4)" }));
+    body.appendChild(h("div", { class: "search-box" }, icon("ri-search-line"), input));
+    body.appendChild(results);
+    draw();
+    root.appendChild(body);
+    root.appendChild(SiteFooter());
+    setTimeout(function () { try { input.focus(); } catch (e) {} }, 50);
+    return root;
+  }
+
+  /* ---- Tag results page ----------------------------------- */
+  function TagScreen(tag) {
+    var root = h("div", {}, SiteHeader({ route: null }, false));
+    var body = h("div", { class: "page", style: "padding:var(--space-8) var(--space-5) var(--space-9)" });
+    var items = (D.products || []).filter(function (p) { return (p.tags || []).indexOf(tag) >= 0; });
+    body.appendChild(SectionHeading({ eyebrow: "商品標籤", title: "「" + tag + "」相關商品", style: "margin-bottom:var(--space-5)" }));
+    if (!items.length) {
+      body.appendChild(h("p", { class: "cart-empty" }, "目前沒有這個標籤的商品。"));
+    } else {
+      body.appendChild(h.apply(null, ["div", { class: "jd-grid-4" }].concat(items.map(ProductCard))));
+    }
+    root.appendChild(body);
+    root.appendChild(SiteFooter());
+    return root;
+  }
+
   var heroTimer = null;
   function render() {
     if (heroTimer) { clearInterval(heroTimer); heroTimer = null; }
@@ -1005,6 +1053,8 @@
       case "cart": view = CartScreen(); break;
       case "checkout": view = CheckoutScreen(); break;
       case "order-done": view = OrderDoneScreen(); break;
+      case "search": view = SearchScreen(); break;
+      case "tag": view = TagScreen(r.param); break;
       default: view = HomeScreen();
     }
     mount.innerHTML = "";

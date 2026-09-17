@@ -67,15 +67,8 @@ collections:
               - { name: oldPrice, label: "原價（會劃掉；沒有就留空）", widget: number, required: false, value_type: int, min: 0 }
               - { name: tags, label: "標籤（如 溫補、舒緩）", widget: list, required: false }
               - { name: image, label: "照片", widget: image }
-              - name: mode
-                label: "銷售方式"
-                widget: select
-                default: "cart"
-                options:
-                  - { label: "線上購物車（自家販售、先下單後付款）", value: "cart" }
-                  - { label: "到蝦皮購買", value: "shopee" }
-                  - { label: "客製／詢問（走 LINE）", value: "line" }
-              - { name: shopeeUrl, label: "蝦皮商品連結（銷售方式選「到蝦皮購買」時才填）", widget: string, required: false, hint: "貼上該商品的蝦皮頁面網址" }
+              - { name: custom, label: "客製商品（只走 LINE，不進購物車）", widget: boolean, default: false, hint: "水藥、客製茶飲等沒有固定價的商品打開；一般商品請關閉" }
+              - { name: shopeeUrl, label: "蝦皮商品連結（選填，填了商品頁會多一顆「到蝦皮購買」）", widget: string, required: false, hint: "貼上該商品的蝦皮頁面網址；不填也能加入購物車" }
 
   # ---- 商品分類介紹頁 ----
   - name: "categories"
