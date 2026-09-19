@@ -39,6 +39,8 @@ collections:
               - { name: phone, label: "電話", widget: string }
               - { name: email, label: "Email", widget: string }
               - { name: remit, label: "匯款資訊（結帳頁顯示；銀行／戶名／帳號，可換行）", widget: text, required: false }
+              - { name: shippingFee, label: "運費（宅配，NT）", widget: number, required: false, value_type: int, min: 0, default: 100 }
+              - { name: freeShipThreshold, label: "免運門檻（商品折扣後滿多少免運，NT）", widget: number, required: false, value_type: int, min: 0, default: 2000 }
 
   # ---- 商品（新增 / 下架就在這裡操作） ----
   - name: "products"

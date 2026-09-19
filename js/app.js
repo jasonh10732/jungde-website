@@ -839,7 +839,7 @@
   function CheckoutScreen() {
     var root = h("div", {}, SiteHeader({ route: null }, false));
     var body = h("div", { class: "page", style: "padding:var(--space-8) var(--space-5) var(--space-9);max-width:760px" });
-    body.appendChild(SectionHeading({ eyebrow: "結帳", title: "填寫訂購資料", style: "margin-bottom:var(--space-5)" }));
+    body.appendChild(SectionHeading({ eyebrow: "結帳", title: "先付款・再填訂單", style: "margin-bottom:var(--space-5)" }));
     var items = cartRead();
     if (items.length === 0) {
       body.appendChild(h("p", { class: "cart-empty" }, "購物車是空的，無法結帳。"));
@@ -849,8 +849,19 @@
     }
 
     var subtotal = cartTotal();
+    var shipFee = Number((D.shop && D.shop.shippingFee != null) ? D.shop.shippingFee : 100) || 0;
+    var freeThresh = Number((D.shop && D.shop.freeShipThreshold != null) ? D.shop.freeShipThreshold : 2000) || 0;
     var appliedCoupon = null; // { code, discount }
-    function finalTotal() { return Math.max(0, subtotal - (appliedCoupon ? appliedCoupon.discount : 0)); }
+
+    var pickupS = h("select", { class: "field-select", name: "取貨方式" },
+      h("option", { value: "門市自取" }, "門市自取（免運）"),
+      h("option", { value: "宅配到府" }, "宅配到府"));
+    pickupS.addEventListener("change", function () { renderSummary(); toggleAddr(); });
+    var fPickup = h("label", { class: "field" }, h("span", {}, "取貨方式"), pickupS);
+
+    function goods() { return Math.max(0, subtotal - (appliedCoupon ? appliedCoupon.discount : 0)); }
+    function shipping() { return (pickupS.value === "宅配到府" && (freeThresh <= 0 || goods() < freeThresh)) ? shipFee : 0; }
+    function finalTotal() { return goods() + shipping(); }
 
     var summary = h("div", { class: "order-summary" });
     function renderSummary() {
@@ -859,9 +870,9 @@
         summary.appendChild(h("div", { class: "os-row" }, h("span", {}, it.name + " ×" + it.qty), h("span", {}, "NT " + (it.price * it.qty))));
       });
       summary.appendChild(h("div", { class: "os-row" }, h("span", {}, "小計"), h("span", {}, "NT " + subtotal)));
-      if (appliedCoupon) {
-        summary.appendChild(h("div", { class: "os-row os-discount" }, h("span", {}, "優惠券 " + appliedCoupon.code), h("span", {}, "− NT " + appliedCoupon.discount)));
-      }
+      if (appliedCoupon) summary.appendChild(h("div", { class: "os-row os-discount" }, h("span", {}, "優惠券 " + appliedCoupon.code), h("span", {}, "− NT " + appliedCoupon.discount)));
+      var sh = shipping();
+      summary.appendChild(h("div", { class: "os-row" }, h("span", {}, "運費"), h("span", {}, sh > 0 ? ("NT " + sh) : "免運")));
       summary.appendChild(h("div", { class: "os-row os-total" }, h("span", {}, "應付合計"), h("span", {}, "NT " + finalTotal())));
     }
 
@@ -881,27 +892,53 @@
       h("label", { class: "field", style: "flex:1;min-width:0" }, h("span", {}, "優惠券"), couponInput),
       Button({ variant: "secondary", size: "sm", type: "button", label: "套用", onClick: applyCoupon }));
 
-    // Payment info block (先下單、後付款；顯示匯款帳號)
+    // Payment block (先付款、後下單)
     var remit = (D.shop && D.shop.remit) ? D.shop.remit : "（店家匯款帳號尚未設定，我們會於聯繫時提供）";
     var payBlock = h("div", { class: "pay-block" },
-      h("h3", { class: "checkout-h" }, "付款方式（先下單、後付款）"),
+      h("h3", { class: "checkout-h" }, "付款方式（先付款、再填訂單）"),
       h("div", { class: "pay-box" },
         h("pre", { class: "pay-remit" }, remit),
-        h("p", { class: "fineprint" }, "請於付款後在下方「備註」填寫您的轉帳帳號末五碼，我們會透過官方 LINE 或電話 " + (D.shop ? D.shop.phone : "") + " 與您聯繫確認。門市自取者可到店付款；恕不提供線上刷卡。")),
+        h("p", { class: "fineprint" }, "請先完成付款（轉帳／LINE Pay），下一步在「備註」填寫您的轉帳帳號末五碼，我們會核對後與您聯繫。恕不提供線上刷卡。")),
       h("div", { class: "row wrap gap-2", style: "align-items:center;margin-top:var(--space-2)" },
-        h("span", { class: "fineprint" }, "官方 LINE 無法主動加您，請先加我們為好友："),
+        h("span", { class: "fineprint" }, "用 LINE Pay 轉帳可加我們 LINE："),
         LineButton({ size: "sm", label: "加入種德 LINE 好友" })));
 
-    // Fields (no LINE ID; validation is custom so we can show the required message)
+    var paidBtn = Button({ variant: "primary", type: "button", icon: "ri-arrow-right-line", iconRight: true,
+      label: "我已付款完畢，下一步填寫訂單資訊",
+      onClick: function () { payStep.style.display = "none"; infoStep.style.display = "block"; window.scrollTo({ top: 0, behavior: "smooth" }); } });
+
+    var payStep = h("div", {},
+      h("h3", { class: "checkout-h" }, "訂單明細"), summary,
+      couponRow, couponMsg,
+      fPickup,
+      payBlock,
+      h("div", { style: "margin-top:var(--space-3)" }, paidBtn));
+
+    // ---- Step 2: 訂單資訊 ----
     var fName = Field({ label: "姓名", name: "姓名", placeholder: "您的姓名" });
     var fPhone = Field({ label: "聯絡電話", name: "電話", icon: "ri-phone-line", placeholder: "09xx-xxx-xxx" });
-    var fAddr = Field({ label: "宅配地址（選宅配才需填）", name: "地址", placeholder: "收件地址" });
+    var fAddr = Field({ label: "宅配地址", name: "地址", placeholder: "收件地址" });
     var nameI = fName.querySelector("input"), phoneI = fPhone.querySelector("input"), addrI = fAddr.querySelector("input");
-    var pickupS = h("select", { class: "field-select", name: "取貨方式" },
-      h("option", { value: "門市自取" }, "門市自取"), h("option", { value: "宅配到府" }, "宅配到府"));
-    var fPickup = h("label", { class: "field" }, h("span", {}, "取貨方式"), pickupS);
-    var noteT = h("textarea", { class: "field-textarea", rows: "3", name: "備註", placeholder: "付款後請填轉帳帳號末五碼；其他需求也可備註" });
-    var fNote = h("label", { class: "field" }, h("span", {}, "備註"), noteT);
+    function toggleAddr() { fAddr.style.display = (pickupS.value === "宅配到府") ? "flex" : "none"; }
+
+    var contactPhone = h("input", { type: "radio", name: "聯絡方式", value: "電話" });
+    contactPhone.checked = true;
+    var contactLine = h("input", { type: "radio", name: "聯絡方式", value: "LINE" });
+    var lineNote = h("div", { class: "contact-line-note", style: "display:none" },
+      h("p", { class: "fineprint" }, "官方 LINE 無法主動加您，請加入我們的 LINE 並主動告知您的訂貨姓名，我們才能對到您的訂單："),
+      LineButton({ size: "sm", label: "加入種德 LINE 好友" }));
+    function toggleContact() { lineNote.style.display = contactLine.checked ? "block" : "none"; }
+    contactPhone.addEventListener("change", toggleContact);
+    contactLine.addEventListener("change", toggleContact);
+    var contactField = h("div", { class: "field" },
+      h("span", {}, "後續聯絡方式"),
+      h("div", { class: "radio-row" },
+        h("label", { class: "radio-opt" }, contactPhone, h("span", {}, "電話")),
+        h("label", { class: "radio-opt" }, contactLine, h("span", {}, "LINE"))),
+      lineNote);
+
+    var noteT = h("textarea", { class: "field-textarea", rows: "3", name: "備註", placeholder: "請填您的轉帳帳號末五碼；其他需求也可備註" });
+    var fNote = h("label", { class: "field" }, h("span", {}, "備註（轉帳末五碼）"), noteT);
     var status = h("p", { class: "fineprint", style: "color:var(--redwood);display:none" }, "");
     var submitBtn = Button({ variant: "primary", type: "submit", icon: "ri-check-line", label: "送出訂單" });
 
@@ -913,20 +950,19 @@
       return miss;
     }
     function submitOrder() {
-      if (validate().length) {
-        status.style.display = "block";
-        status.textContent = "請輸入完整資訊以便種德藥房後續與您聯繫，謝謝";
-        return;
-      }
+      if (validate().length) { status.style.display = "block"; status.textContent = "請輸入完整資訊以便種德藥房後續與您聯繫，謝謝"; return; }
       status.style.display = "none";
+      var sh = shipping();
       var lines = cartRead().map(function (it) { return "・" + it.name + " ×" + it.qty + " = NT " + (it.price * it.qty); });
       var detail = lines.join("\n") + "\n小計：NT " + subtotal;
       if (appliedCoupon) detail += "\n優惠券 " + appliedCoupon.code + "：− NT " + appliedCoupon.discount;
+      detail += "\n運費：" + (sh > 0 ? ("NT " + sh) : "免運");
       detail += "\n應付合計：NT " + finalTotal();
       var data = {
         "form-name": "order", "姓名": nameI.value, "電話": phoneI.value,
-        "取貨方式": pickupS.value, "地址": addrI.value, "備註": noteT.value,
+        "取貨方式": pickupS.value, "地址": addrI.value, "聯絡方式": (contactLine.checked ? "LINE" : "電話"), "備註": noteT.value,
         "優惠券": appliedCoupon ? appliedCoupon.code : "", "折扣金額": appliedCoupon ? ("NT " + appliedCoupon.discount) : "NT 0",
+        "運費": sh > 0 ? ("NT " + sh) : "免運",
         "訂單明細": detail, "總計": "NT " + finalTotal(),
       };
       var enc = Object.keys(data).map(function (k) { return encodeURIComponent(k) + "=" + encodeURIComponent(data[k]); }).join("&");
@@ -944,17 +980,18 @@
         });
     }
 
-    renderSummary();
-    var form = h("form", { class: "checkout-form", name: "order", onSubmit: function (e) { e.preventDefault(); submitOrder(); } },
-      h("h3", { class: "checkout-h" }, "訂單明細"), summary,
-      couponRow, couponMsg,
-      payBlock,
-      h("h3", { class: "checkout-h" }, "聯絡與取貨"),
+    var infoStep = h("form", { class: "checkout-form", name: "order", style: "display:none",
+      onSubmit: function (e) { e.preventDefault(); submitOrder(); } },
+      h("h3", { class: "checkout-h" }, "填寫訂單資訊"),
       h("div", { class: "jd-form-2" }, fName, fPhone),
-      h("div", { class: "jd-form-2" }, fPickup, fAddr),
+      contactField,
+      fAddr,
       fNote,
       h("div", { style: "margin-top:var(--space-3)" }, submitBtn), status);
-    body.appendChild(form);
+
+    renderSummary(); toggleAddr(); toggleContact();
+    body.appendChild(payStep);
+    body.appendChild(infoStep);
     root.appendChild(body);
     root.appendChild(SiteFooter());
     return root;
@@ -967,7 +1004,8 @@
     var body = h("div", { class: "page center-text", style: "padding:var(--space-10) var(--space-5);max-width:640px" });
     body.appendChild(h("div", { class: "order-done-icon" }, icon("ri-checkbox-circle-fill")));
     body.appendChild(h("h1", { style: "margin:var(--space-3) 0 var(--space-2)" }, "已收到您的訂單"));
-    body.appendChild(h("p", { style: "color:var(--text-body)" }, "感謝您的訂購！我們會盡快與您聯繫確認訂單內容，並提供付款方式（轉帳／LINE Pay／門市自取）。"));
+    body.appendChild(h("p", { class: "order-notice" }, "我們將於 3 個工作天內與您聯絡出貨事宜"));
+    body.appendChild(h("p", { style: "color:var(--text-body)" }, "感謝您的訂購！我們會核對您的付款後，與您聯繫確認訂單與出貨。"));
     if (last && last.detail) {
       body.appendChild(h("pre", { class: "order-recap" }, last.detail));
       body.appendChild(h("div", { class: "row wrap gap-2", style: "justify-content:center;margin-top:var(--space-4)" },

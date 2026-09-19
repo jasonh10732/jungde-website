@@ -28,9 +28,9 @@
   --fs-h5: 20px;       /* @kind font */
   --fs-lg: 20px;       /* @kind font */
   --fs-md: 16px;       /* @kind font */
-  --fs-sm: 14px;       /* @kind font */
-  --fs-xs: 12px;       /* @kind font */
-  --fs-xxs: 10px;      /* @kind font */
+  --fs-sm: 16px;       /* @kind font */
+  --fs-xs: 14px;       /* @kind font */
+  --fs-xxs: 13px;      /* @kind font */
   --fs-display: 68px;  /* @kind font */
 
   /* ---- Line heights --------------------------------------- */

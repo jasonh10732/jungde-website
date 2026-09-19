@@ -7,6 +7,8 @@
     "hoursWeekend": "週六 08:30–18:00",
     "phone": "02-26813756",
     "email": "dengyi888@gmail.com",
-    "remit": "匯款資訊（請至後台填寫）\n銀行：\n戶名：\n帳號："
+    "remit": "匯款資訊（請至後台填寫）\n銀行：\n戶名：\n帳號：",
+    "shippingFee": 100,
+    "freeShipThreshold": 2000
   }
 }

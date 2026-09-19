@@ -184,9 +184,9 @@
 .site-header__inner { max-width: var(--page-max); margin: 0 auto; padding: var(--space-2) var(--space-5); display: flex; align-items: center; gap: var(--space-5); }
 .site-header__logo { display: flex; align-items: center; gap: var(--space-2); flex: none; }
 .site-header__logo img { height: 56px; width: auto; filter: drop-shadow(0 1px 2px rgba(0,0,0,.25)); }
-.site-nav { display: flex; gap: var(--space-3); flex: 1; flex-wrap: nowrap; }
+.site-nav { display: flex; gap: var(--space-2); flex: 1; flex-wrap: nowrap; }
 .site-nav a {
-  font-family: var(--font-sans); font-weight: var(--weight-medium); font-size: var(--fs-md);
+  font-family: var(--font-sans); font-weight: var(--weight-medium); font-size: var(--fs-h5);
   color: var(--white); opacity: 0.86; padding: 0 0 4px; border-bottom: 2px solid transparent;
   white-space: nowrap; transition: opacity var(--dur) var(--ease-soft), border-color var(--dur) var(--ease-soft);
 }
@@ -401,6 +401,13 @@
 /* ---- Order confirmation ---------------------------------- */
 .order-done-icon { font-size: 64px; color: var(--seal-olive); line-height: 1; }
 .order-recap { text-align: left; white-space: pre-wrap; background: var(--surface-warm); border: 1px solid var(--border-soft); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); font-family: var(--font-sans); font-size: var(--fs-sm); color: var(--text-body); margin: var(--space-4) 0 0; }
+.order-notice { font-family: var(--font-serif); font-weight: var(--weight-bold); font-size: var(--fs-h4); color: var(--redwood); background: var(--champagne-60); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); margin: 0 auto var(--space-3); display: inline-block; }
+
+/* ---- Checkout: contact-method radio ---------------------- */
+.radio-row { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+.radio-opt { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-family: var(--font-sans); font-size: var(--fs-md); color: var(--text-body); }
+.radio-opt input { width: 18px; height: 18px; accent-color: var(--redwood); }
+.contact-line-note { margin-top: var(--space-2); background: var(--surface-warm); border: 1px solid var(--border-soft); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); display: flex; flex-direction: column; gap: var(--space-2); align-items: flex-start; }
 
 /* ---- Toast ----------------------------------------------- */
 .toast { position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 12px); background: var(--eggplant); color: #fff; font-family: var(--font-sans); font-size: var(--fs-sm); padding: 12px 20px; border-radius: var(--radius-pill); box-shadow: var(--shadow-pop); opacity: 0; pointer-events: none; z-index: 1100; transition: opacity var(--dur) var(--ease-soft), transform var(--dur) var(--ease-soft); }
